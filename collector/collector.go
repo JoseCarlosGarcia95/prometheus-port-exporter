@@ -2,10 +2,12 @@ package collector
 
 import (
 	"log"
+	"net"
 	"strconv"
+	"sync"
+	"sync/atomic"
 	"time"
 
-	"github.com/JoseCarlosGarcia95/go-port-scanner/portscanner"
 	"github.com/JoseCarlosGarcia95/prometheus-port-exporter/models"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -54,7 +56,7 @@ func collect() {
 
 		for _, instance := range instances {
 			log.Printf("Scanning ports in %s...\n", instance.IP)
-			ports := portscanner.PortRange(instance.IP, "tcp", 1, 65535, 2)
+			ports := PortRange(instance.IP, "tcp", 1, 65535, 2)
 
 			labels := calculateLabels(instance, 0)
 
@@ -69,6 +71,55 @@ func collect() {
 
 		time.Sleep(5 * time.Second)
 	}
+}
+
+// IsPortOpen checks if a port is open or not.
+func IsPortOpen(host, protocol string, port uint32) bool {
+	conn, err := net.DialTimeout(protocol, host+":"+strconv.Itoa(int(port)), 10*time.Second)
+	if err != nil {
+		log.Printf("Error: %v\n", err)
+		return false
+	}
+	defer conn.Close()
+	return true
+}
+
+// PortRange returns a slice of ports that are open.
+func PortRange(host, protocol string, start, end, workers uint32) []uint32 {
+	var wg sync.WaitGroup
+	var mutex sync.Mutex
+	var ports = make(chan uint32, end-start+1)
+
+	var openedPorts []uint32
+
+	for i := start; i <= end; i++ {
+		ports <- i
+	}
+
+	toProcess := uint32(0)
+	for i := uint32(0); i < workers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			for toProcess < end-start+1 {
+				atomic.AddUint32(&toProcess, 1)
+
+				port := <-ports
+				if IsPortOpen(host, protocol, port) {
+					mutex.Lock()
+					openedPorts = append(openedPorts, port)
+					mutex.Unlock()
+				}
+			}
+
+		}()
+	}
+
+	wg.Wait()
+	close(ports)
+
+	return openedPorts
 }
 
 // calculateLabels is a function that calculates the labels
