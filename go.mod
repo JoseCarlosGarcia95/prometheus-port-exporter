@@ -3,7 +3,7 @@ module github.com/JoseCarlosGarcia95/prometheus-port-exporter
 go 1.21.0
 
 require (
-	github.com/JoseCarlosGarcia95/go-port-scanner v0.0.0-20220320103816-c16a37d0aa75
+	github.com/JoseCarlosGarcia95/go-port-scanner v0.0.1
 	github.com/prometheus/client_golang v1.16.0
 )
 
