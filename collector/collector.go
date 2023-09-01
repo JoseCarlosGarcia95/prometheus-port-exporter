@@ -56,7 +56,7 @@ func collect() {
 
 		for _, instance := range instances {
 			log.Printf("Scanning ports in %s...\n", instance.IP)
-			ports := PortRange(instance.IP, "tcp", 1, 65535, 2)
+			ports := PortRange(instance.IP, "tcp", 1, 65535, 50)
 
 			labels := calculateLabels(instance, 0)
 
@@ -75,9 +75,8 @@ func collect() {
 
 // IsPortOpen checks if a port is open or not.
 func IsPortOpen(host, protocol string, port uint32) bool {
-	conn, err := net.DialTimeout(protocol, host+":"+strconv.Itoa(int(port)), 10*time.Second)
+	conn, err := net.DialTimeout(protocol, host+":"+strconv.Itoa(int(port)), 2*time.Second)
 	if err != nil {
-		log.Printf("Error: %v\n", err)
 		return false
 	}
 	defer conn.Close()

@@ -31,5 +31,13 @@ func ReadInstances(path string) ([]*Instance, error) {
 
 	err = json.Unmarshal(byteValue, &instances)
 
+	// Check if IP contains /24
+	for _, instance := range instances {
+		if instance.IP[len(instance.IP)-3:] == "/24" {
+			// Remove /24
+			instance.IP = instance.IP[:len(instance.IP)-3]
+		}
+	}
+
 	return instances, nil
 }
