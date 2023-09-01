@@ -54,7 +54,7 @@ func collect() {
 
 		for _, instance := range instances {
 			log.Printf("Scanning ports in %s...\n", instance.IP)
-			ports := portscanner.PortRange(instance.IP, "tcp", 1, 65535, 1000)
+			ports := portscanner.PortRange(instance.IP, "tcp", 1, 65535, 2)
 
 			labels := calculateLabels(instance, 0)
 
