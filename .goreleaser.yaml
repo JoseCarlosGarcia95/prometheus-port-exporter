@@ -7,7 +7,6 @@ builds:
       - CGO_ENABLED=0
     goos:
       - linux
-      - darwin
 checksum:
   name_template: "checksums.txt"
 snapshot:
@@ -19,20 +18,7 @@ changelog:
       - "^docs:"
       - "^test:"
 
-nfpms:
-  - package_name: prometheus-port-exporter
-    file_name_template: "{{ .ConventionalFileName }}"
-    vendor: "José Carlos García"
-    homepage: https://josecarlos.me
-    maintainer: "José Carlos <hola@josecarlos.me>"
-    description: "prometheus-port-exporter is a tool for monitoring your services easily."
-    license: "GPL-3.0"
-    formats:
-      - deb
-      - rpm
-      - apk
-    dependencies: []
-    contents: []
+nfpms: []
 
 # furies:
 #   - account: "JoseCarlosGarcia95"
