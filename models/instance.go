@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"strings"
 )
 
 // Instance is a struct that represents a single instance
@@ -33,9 +34,9 @@ func ReadInstances(path string) ([]*Instance, error) {
 
 	// Check if IP contains /24
 	for _, instance := range instances {
-		if instance.IP[len(instance.IP)-3:] == "/24" {
-			// Remove /24
-			instance.IP = instance.IP[:len(instance.IP)-3]
+		// Remove the range if the IP contains /x
+		if strings.Contains(instance.IP, "/") {
+			instance.IP = strings.Split(instance.IP, "/")[0]
 		}
 	}
 
