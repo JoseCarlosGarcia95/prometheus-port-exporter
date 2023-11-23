@@ -34,6 +34,10 @@ func ReadInstances(path string) ([]*Instance, error) {
 
 	// Check if IP contains /24
 	for _, instance := range instances {
+		// Ignore IPv6 addresses
+		if strings.Contains(instance.IP, ":") {
+			continue
+		}
 		// Remove the range if the IP contains /x
 		if strings.Contains(instance.IP, "/") {
 			instance.IP = strings.Split(instance.IP, "/")[0]
