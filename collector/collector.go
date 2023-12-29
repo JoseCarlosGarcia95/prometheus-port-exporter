@@ -5,7 +5,6 @@ import (
 	"net"
 	"strconv"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/JoseCarlosGarcia95/prometheus-port-exporter/models"
@@ -95,23 +94,25 @@ func PortRange(host, protocol string, start, end, workers uint32) []uint32 {
 		ports <- i
 	}
 
-	toProcess := uint32(0)
+	toProcess := make(chan uint32, end-start+1)
+	for i := uint32(0); i < end-start+1; i++ {
+		toProcess <- i
+	}
+	close(toProcess)
+
 	for i := uint32(0); i < workers; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 
-			for toProcess < end-start+1 {
-				atomic.AddUint32(&toProcess, 1)
-
-				port := <-ports
+			for port := range toProcess {
+				port += start
 				if IsPortOpen(host, protocol, port) {
 					mutex.Lock()
 					openedPorts = append(openedPorts, port)
 					mutex.Unlock()
 				}
 			}
-
 		}()
 	}
 
